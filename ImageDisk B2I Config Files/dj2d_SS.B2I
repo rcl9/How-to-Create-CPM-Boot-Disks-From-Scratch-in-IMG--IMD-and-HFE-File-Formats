@@ -1,0 +1,70 @@
+; This is the extended format definition of the Morrow "Disk Jockey 2D" controller - SSDD - One sided
+
+;BIN2IMD RCEMY2.RAW RCEMY2.IMD RCEMY2.B2I
+
+; /1                      - 1-sided output
+; /2                      - 2-sided output
+; /C                      - write Compressed sectors
+; /U                      - write Uncompressed sectors
+; /V[0|1]                 - Verbose output
+; C=text | @file          - image Comment
+; N=#cylinders            - set Number of output cylinders
+; DM[s]=0-5               - track Data Mode
+; SS[s]=128-8192          - track Sector Size
+; SM[s]=n[,n-n][n.#]      - track Sector numbering Map
+; CM[s]=n[,n-n][n.#]      - track/sector Cylinder  Map
+; HM[s]=n[,n-n][n.#]      - track/sector Head      Map
+
+; Disk Mode 0=500Khz FM
+; Disk Mode 1=300Khz FM
+; Disk Mode 2=250Khz FM
+; Disk Mode 3=500Khz MFM
+; Disk Mode 4=300Khz MFM
+; Disk Mode 5=250Khz MFM
+
+; ------------------------------
+
+;From 22disk, the definition for Morrow SSDD 1024 disks is:
+;DENSITY MFM ,HIGH
+;CYLINDERS 77 SIDES 2 SECTORS 8,1024
+;SIDE1 0 1,4,7,2,5,8,3,6
+;SIDE2 1 1,4,7,2,5,8,3,6
+;ORDER SIDES
+;BSH 4 BLM 15 EXM 0 DSM 599 DRM 255 AL0 0F0H AL1 0 OFS 4
+;
+; This means, for Morrow DiskJockey 2D SS/DD,
+;	"Allocation unit" = 2048
+;	128 directory entries
+;	DSM = ((77 - 2) * 8 * 1024 / 2048) - 1 = 300-1 = 299
+;	OFS = 2 tracks allocated to the OS
+;	Skew 3, 1024 bytes/sec, 8 sectors per track
+;	500kbps high density transfer rate
+
+; -------- Morrow DJ2D/B (1st track SD, FM, 26 sectors x 128)
+
+; See also:
+;   https://oldcomputers.dyndns.org/public/pub/rechner/lakosa_microcomputer_paderborn/images/write_raw-images_to_floppydisk.html
+
+; Total disk size = 625,920
+
+; SM[s]=n[,n-n][n.#] - track Sector numbering Map
+
+; It appears from my testing that the Morrow system tracks are not skewed.
+
+; DJ2D, track 0 = SD (FM), 26 x 128 byte sectors, single sided
+; DM=0 -> FM  SD 500 kbps
+0  N=77 DM=0 SS=128 SM=1-26 /1
+; 0  N=77 DM=0 SS=128 SM=1,7,13,19,25,5,11,17,23,3,9,15,21,2,8,14,20,26,6,12,18,24,4,10,16,22 /1
+
+; DJ2D tracks 1+, DD (MFM), 8 x 1024 byte sectors, single sided
+; DM=3 -> MFM DD 500 kbps
+; Sector order = 1,4,7,2,5,8,3,6
+1  DM=3 SS=1024 SM=1-8 /1
+; 1  DM=3 SS=1024 SM=1,4,7,2,5,8,3,6 /1
+
+; -----------------------
+
+; You can VERIFY the *.IMD file with the utilities IMDA and IMDU.
+;
+; IMDA DISK01.IMD > DISK01.TXT
+; IMDU DISK01.IMD DISK01.RAW /B /E /D >> DISK01.TXT

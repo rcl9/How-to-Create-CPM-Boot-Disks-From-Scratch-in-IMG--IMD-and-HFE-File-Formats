@@ -1,0 +1,133 @@
+# This is the Morrow "Disk Jockey 2D" controller which has the first track in
+# single density (26 sectors of 128 bytes) and the remaining 76 tracks in 
+# double density (8 sectors of 1024 bytes). 
+#
+#From 22disk, the definition for Morrow SSDD 1024 disks is:
+#DENSITY MFM ,HIGH
+#CYLINDERS 77 SIDES 2 SECTORS 8,1024
+#SIDE1 0 1,4,7,2,5,8,3,6
+#SIDE2 1 1,4,7,2,5,8,3,6
+#ORDER SIDES
+#BSH 4 BLM 15 EXM 0 DSM 599 DRM 255 AL0 0F0H AL1 0 OFS 4
+#
+# This means, for Morrow DiskJockey 2D SS/DD,
+#	BSH = 4, BLH = 0xf "Allocation unit" = 2048
+#	DRM = 128 directory entries for single sided and 256 entries for double sided
+#	DSM SS = ((77 - 2) * 8 * 1024 / 2048) - 1 = 300-1 = 299 # of blocks on the disk
+#	DSM DS = ((154 - 2) * 8 * 1024 / 2048) - 1 = 600-1 = 599 # of blocks on the disk
+#	OFS = 2 tracks allocated to the OS. RCL Note: the DJ2D CBios uses '2' for DSDD. However, my own findings are that 
+#		there are 4 system tracks, the first two in SD and the next in DD. 
+#
+#	Skew 3, 1024 bytes/sec, 8 sectors per track
+#	500kbps high density transfer rate
+
+diskdef rclcpm
+  seclen 1024
+  tracks 77
+  sectrk 8
+  blocksize 2048
+  maxdir 128
+  skew 3
+  boottrk 2
+  os 2.2
+end
+
+#
+# This version does not require that the "realign_morrow_dsk_images.exe" program be run on Morrow imaged disks. What it does
+# is to strip off the two system tracks from the file (offset 11520) and sets the "boottrk" option implicitly to 0.
+#
+diskdef rclcpm2
+  seclen 1024
+  tracks 77
+  sectrk 8
+  blocksize 2048
+  maxdir 128
+  skew 3
+  boottrk 0
+  offset 11520
+  os 2.2
+end
+
+# Same as above but for double sided 8" Morrow DJ2D disks (1.2MB capacity) with offset 23040
+
+# I also confirmed that for DS disks, logical tracks 0 and 1 are SD whereas 2 and 3 are DD, but the system tracks are only written to the first side
+# and hence the system remains on tracks 0 (SD) and 2 (DD).
+
+diskdef rclcpm2_ds
+  seclen 1024
+  # Double the number of sectors per track for DS
+  tracks 154
+  sectrk 8
+  blocksize 2048
+  maxdir 256
+  skew 3
+  boottrk 0
+  offset 23040
+  # Use this for double sided disks
+  heads 2
+  os 2.2
+end
+
+# This is for a DSDD Morrow disk via Kryoflux 
+# Notes: You need to double the # of tracks and include 'heads 2'
+diskdef rclcpm3_ds
+  seclen 1024
+  # Double the number of sectors per track for DS
+  tracks 154
+  sectrk 8
+  blocksize 2048
+  maxdir 256
+  skew 3
+  boottrk 0
+  # 0x8000 from DSDS disk via Kryoflux
+  offset 32768
+  # Use this for double sided disks
+  heads 2
+  os 2.2
+end
+
+# ------------------------------------------------------------------
+
+# Morrow DiskJockey 2D SS/DS definitions without the system tracks defined (and with no "offset" parameter)
+#
+# These are similar to the above but derived in the following manners:
+#
+#	1) They are used in the following routines which generate brand new HxC image files from a bunch of
+#	     files on disk. Due to bugs in CPMTools I had to insert the new files ONLY into the data tracks and not
+#	     with system tracks in the temporary .img file  being manipulated by CPMTools. CPMTools would mess up
+#	     the final size of the file by padding it with the "offset" amount which was incorrect.
+#
+#	2) This precludes the consideration of the first two system tracks whatsoever. It defines ONLY the data tracks
+#	     and hence skirts the issue with the bloated and corrupted .img file when 'offset' is provided in the diskdef.
+
+# Single sided version, SSDD
+diskdef rclcpm_SS_nosystracks
+  seclen 1024
+  # Two less tracks since we are now deleting the 2 system tracks
+  tracks 75
+  sectrk 8
+  blocksize 2048
+  maxdir 128
+  skew 3
+  boottrk 0
+  os 2.2
+end
+
+# I confirmed that for DS disks, logical tracks 0 and 1 are SD whereas 2 and 3 are DD, but the system tracks are only written to the first side
+# and hence the system remains on tracks 0 (SD) and 2 (DD).
+
+# Double sided version, DSDD
+diskdef rclcpm_DS_nosystracks
+  seclen 1024
+  # Four less tracks since we are now deleting the 2 SD/FM and 2 DD/MFM system tracks (2 per side). 
+  # The Morrow CBios uses OFS of 2 and not 4 for DD but maybe that only applies per side??
+  # My own findings are that there are 4 system tracks, the first two in SD and the next in DD. 
+  tracks 150
+  sectrk 8
+  blocksize 2048
+  maxdir 256
+  skew 3
+  boottrk 0
+  heads 2
+  os 2.2
+end

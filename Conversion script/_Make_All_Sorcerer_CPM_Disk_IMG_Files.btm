@@ -1,0 +1,30 @@
+@echo off
+
+:: This is the CP/M 2.2 system image to be placed on tracks 0 and 1
+:: Refer to the "_Make_Sorcerer_CPM_Disk_IMG_File.btm" file for the definitions.
+::	3 = 52k CP/M, single-sided, v6, CBios v3.3, Light Speed LS-100 Ramdisk support
+::	4 = 48k CP/M, single-sided, v6, CBios v3.3, Light Speed LS-100 Ramdisk support
+set Preferred_SS_CPM_Sys_Image=3
+set Preferred_DS_CPM_Sys_Image=3
+
+:: ------ Single sided disks
+
+:: '0' argument = single sided
+
+:: Sorcerer main boot disk (much smaller version -- use the double sided version instead)
+call _Make_Sorcerer_CPM_Disk_IMG_File.btm   boot_ss/*       boot52ss.img      %Preferred_SS_CPM_Sys_Image%     0
+
+:: ------ Double sided disks
+
+:: '1' argument = double sided
+
+:: Sorcerer main boot disk (which has the grand collection of utilities)
+call _Make_Sorcerer_CPM_Disk_IMG_File.btm    boot_ds/*      boot52ds.img           %Preferred_DS_CPM_Sys_Image%     1
+
+echo !! **************************
+echo !! Don't forget to jumper "2-sided" on the 50-pin to 34-pin interface board 
+echo !!  	in case the .HFE files for A: and B: are double-sided.  
+echo !! **************************
+
+@echo on
+

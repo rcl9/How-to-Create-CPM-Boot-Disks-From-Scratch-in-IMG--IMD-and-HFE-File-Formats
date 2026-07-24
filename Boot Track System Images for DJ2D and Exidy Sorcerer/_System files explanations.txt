@@ -1,0 +1,21 @@
+These are for a single sided disk with the first track in SD (128 x 26) and the second track in DD (1024 * 8) with no skewing on either:
+
+RCL_CPM48k_SS_Z80Bios4.1_LS100_v6.sys
+RCL_CPM52k_SS_Z80Bios4.1_LS100_v6.sys
+	RCL recompiled all of the CP/M 2.2 source files into his own system track image (via Yaze) for a 48k and 52k machine.
+
+RCL_CPM48k_SS_Cbios3.3.sys
+	Similar recompilation but using the older cbios2.asm v3.3 and not the newer z80bios4.mac
+
+--------------- Older files (sourced from the original 1980's CP/M 2.2 8in disks)
+
+The following files were extracted from the first two tracks of the original 24k, 48k and 52k Morrow DJ2D Sorcerer 8" disks. 
+
+This is the original Morrow 24k CP/M 2.2 distribution. It works well but has slow character output due to the lack of kbstat.
+cpm24k_SS_CBios3.1.sys
+
+And my generic 48k CP/M 2.2 without LS-100 support
+cpm48k_SS_CBios3.1.sys
+
+And my generic 52k CP/M 2.2 with LS-100 Ramdisk support
+	cpm52k__SS_CBios3.3.sys

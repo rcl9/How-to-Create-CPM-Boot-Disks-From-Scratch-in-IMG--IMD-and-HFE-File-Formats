@@ -1,0 +1,206 @@
+@echo off
+
+:: Embed the list of PC-based files of a specified source directory into a Sorcerer SSDD or DSDD CP/M raw IMG file after which a
+:: IMD file is generated followed by a HFE file for the HxC Floppy Emulator. 
+
+:: Written by 'RCL9':
+::	Rob's Retro Computing Archive (RCL9)
+::	RetroComputingArchive@gmail.com
+::	https://github.com/rcl9
+::
+:: This script is written in the "4DOS/4NT/TCE/Take-Command" scripting language by JP Software. I was one of their inital users!
+::
+:: --------------------------------------------------------------
+
+:: Location of the 32-bit version of the ImageDisk utilities
+set ImageDisk_PATH="<some directory>\ImageDisk"
+
+:: Location of the HxC floppy emulator's command line conversion utility
+set HxC_PATH="<some directory>\HxC Software"
+
+:: --------------------------------------------------------------
+
+IF NOT "%#%" == "4" (
+    echo Error: Invalid number of arguments (need 4)
+    echo Usage: %0
+    echo       <source directory name of the files to put in the IMG file>
+    echo       <output .img filename>
+    echo       <System .sys boot file template to use = 1, 2, 3, 4, 5, 6>
+    echo       '0' to create a single-sided 640k disk or '1' to create a double-sided 1.2MB disk
+    echo.
+    echo example: '%0 "rompac1 - sorcerer basic games # 1" rompac1.img 4 0'
+    quit
+)
+
+:: 0 for single sided images, 1 for double sided images
+set MAKE_DOUBLE_SIDED_IMAGE=%4
+
+:: Determine which system .sys boot file template base IMG file to use (each of which has a different version of CP/M 2.2)
+:: Basically, choose #3 or #4 both for SS and DS output disks
+::	1 = 48k CP/M, single-sided image, CBios v3.3 (from an original 1985 disk -- not needed; do not use)
+::	2 = 52k CP/M, single-sided image, v529, CBios v3.3 (from an original 1985 disk -- not needed; do not use)
+::	*** 3 = 52k CP/M, single-sided image, v6, Z80 CBios v4.1, Light Speed LS-100 Ramdisk & RTC support [ Compiled by RCL from source]
+::	*** 4 = 48k CP/M, single-sided image, v6, Z80 CBios v4.1, Light Speed LS-100 Ramdisk & RTC support [ Compiled by RCL from source ]
+::	5 = 52k CP/M, double-sided image, v600, CBios v3.3, Light Speed LS-100 Ramdisk support (from an original 1985 disk -- not needed; do not use; it is imaged as 4 tracks and double sided)
+::	6 = 24k CP/M, single-sided image, CBios v3.1 (from the original Morrow 24k CP/M 2.2 distribution disk)
+set USE_TEMPLATE_IMAGE= %3
+
+IF ( %3 LT 1 .or. %3 GT 6 ) (
+	echo [ERROR] The third argument must be 1, 2, 3, 4, 5 or 6 to choose the template .img file to use (see .btm file)
+	quit
+)
+
+:: Determine which Sorcerer CP/M 2.2 system image we are going to use
+::
+:: Single sided versions
+::
+set IMAGEDISK_B2I_CONFIG_FILE=dj2d_SS.B2I
+set CONVERT_SS_2TRACK_SYS_IMAGE_TO_DS_4TRACK=1
+:: For CPMTools so that it'll skip over the first 2 system tracks for single-sided disks
+set FORMAT=rclcpm_SS_nosystracks
+if %USE_TEMPLATE_IMAGE% == 1 (
+	set INPUT_SYSTEM_IMAGE_NAME="_Systems\\RCL_CPM48k_SS_Cbios3.3.sys"
+) else if %USE_TEMPLATE_IMAGE% == 2 (
+	set INPUT_SYSTEM_IMAGE_NAME="_Systems\\cpm52k__SS_CBios3.3.sys"
+) else if %USE_TEMPLATE_IMAGE% == 3 (
+	set INPUT_SYSTEM_IMAGE_NAME="_Systems\\RCL_CPM52k_SS_Z80Bios4.1_LS100_v6.sys"
+) else if %USE_TEMPLATE_IMAGE% == 4 (
+	set INPUT_SYSTEM_IMAGE_NAME="_Systems\\RCL_CPM48k_SS_Z80Bios4.1_LS100_v6.sys"
+	:: set INPUT_SYSTEM_IMAGE_NAME="out-SysGen-file.bin"
+) else if %USE_TEMPLATE_IMAGE% == 5 (
+	:: This .sys image was captured via Imagedisk/Kryoflux from a real 8" DSDD disk and hence the system image is in 
+	:: "4 track" format, whereby those 2 tracks on side #2 are not used. As such, as we not need to convert it from
+	:: our single-sided 2 track format to the double-sided 4 track format. 
+	set CONVERT_SS_2TRACK_SYS_IMAGE_TO_DS_4TRACK=0
+	set INPUT_SYSTEM_IMAGE_NAME="_Systems\\cpm52k_DS_CBios4_LS100_v6.sys"
+) else if %USE_TEMPLATE_IMAGE% == 6 (
+	set INPUT_SYSTEM_IMAGE_NAME="_Systems\\cpm24k_SS_CBios3.1.sys"
+	:: set INPUT_SYSTEM_IMAGE_NAME="out-SysGen-file.bin"
+) else (
+	echo The third argument %USE_TEMPLATE_IMAGE% must be 1, 2, 3, 4 or 5 to choose the template .img file to use (see .btm file)
+	quit
+)
+
+if %MAKE_DOUBLE_SIDED_IMAGE% == 1 (
+	:: For CPMTools so that it'll skip over the first 4 system tracks
+	set FORMAT=rclcpm_DS_nosystracks
+	:: For ImageDisks's bin2imd.exe program to transform the IMG file to a IMD file with proper track geometry
+	set IMAGEDISK_B2I_CONFIG_FILE=dj2d_DS.B2I
+)
+
+:: Make a new CP/M file system (no system tracks yet). Note: it won't be the full disk size but just the size of whatever is written into it.
+rm -f %2
+mkfs.cpm.exe -f %FORMAT% %2
+
+:: Embed our local files into the empty disk image
+:: cpmcp -T raw -f %FORMAT% %2 %1 0:
+cpmcp -f %FORMAT% %2 %1 0:
+set ReturnCode=%?
+IF %ReturnCode% GT 0  (
+	echo.
+	echo The CPMTools 'cpmcp' copy program returned error code %ReturnCode. Execution aborted.
+	quit
+)
+
+:: test a file extraction
+:: cpmcp.exe -f %FORMAT% -p %2 0:ls*.* tmp
+
+:: List the contents of the updated IMG file
+cpmls -f %FORMAT% %2
+
+:: Check the final file system
+echo.
+fsck.cpm.exe -f %FORMAT% %2
+echo.
+
+:: Now concatenate the image containing the 2 system tracks with the new data tracks
+if ( %FORMAT% == rclcpm_DS_nosystracks .and. %CONVERT_SS_2TRACK_SYS_IMAGE_TO_DS_4TRACK% == 1 ) (
+        :: For double sided mode, we need to "transform" the side-sided, two track system
+        :: image file into a temporary double-sided, 4 track system image.
+        ::
+        :: Single sided:
+        ::        Logical track 0 = SD = 128 * 26 sectors
+        ::        Logical track 1 = DD = 1024 * 8
+        ::        Total size = 11520
+        :: Double sided:
+        ::        0x000 - Logical track 0 = SD = 128 * 26 sectors - System data
+        ::        0xD00 - Logical track 1 = SD = 128 * 26 sectors - Empty -- EMPTY
+        ::        0x1A00 - Logical track 2 = DD = 1024 * 8         - System data
+        ::        3A00 - Logical track 3 = DD = 1024 * 8         - Empty -- EMPTY
+        ::        5A00 - Total size = 11520 x 2 = 23040
+
+        :: Create a dummy file with 3328 bytes for the empty SD track
+        rm -f tmpfilea
+        fsutil file createnew tmpfilea 3328
+
+        :: Create a dummy file with 8192 bytes for the empty DD track
+        rm -f tmpfileb
+        fsutil file createnew tmpfileb 8192
+
+        :: Extract the first 128x26 SD sectors from the system image ("track 0")
+        dd if="%INPUT_SYSTEM_IMAGE_NAME%" of="temp_trk0.bin" bs=1 count=3328
+
+        :: Then extract the next 1024*8 DD sectors from the system image ("track 1")
+        dd if="%INPUT_SYSTEM_IMAGE_NAME%" of="temp_trk1.bin" bs=1 skip=3328 count=8192
+
+        :: Create the new 23040 byte 4-track, double sided system image file
+        cmd /c copy /b "temp_trk0.bin"+"tmpfilea" + "temp_trk1.bin" + "tmpfileb" temp_ds_system_image.bin
+        rm -f tmpfilea
+        rm -f tmpfileb
+        rm -f temp_trk0.bin
+        rm -f temp_trk1.bin
+
+        :: Prepend the system tracks to the CP/M file system
+        rm -f temp.bin
+        ren %2 temp.bin
+        cmd /c copy /b "temp_ds_system_image.bin"+"temp.bin" %2
+
+        rm -f temp_ds_system_image.bin
+) else (
+        :: Prepend the system tracks to the CP/M file system
+        rm -f temp.bin
+        ren %2 temp.bin
+        cmd /c copy /b "%INPUT_SYSTEM_IMAGE_NAME%"+"temp.bin" %2
+)
+rm -f temp.bin
+
+if %FORMAT% == rclcpm_DS_nosystracks (
+        :: Ensure that the image file is exactly 1,251,840 bytes in size
+        fsutil file seteof %2 1251840
+) else (
+        :: Ensure that the image file is exactly 625,920 bytes in size
+       fsutil file seteof %2 625920
+)
+
+:: Convert the raw IMG file to a DJ2D compatible ImageDisk IMD file (use the newly ported 32-bit bin2imd utility)
+echo.
+%ImageDisk_PATH%\bin2imd ^
+	%2 ^
+	%~n2.imd ^
+	%ImageDisk_PATH%/%IMAGEDISK_B2I_CONFIG_FILE%
+echo.
+
+:: Now convert the ImageDisk IMD file to a HFE file to be used with the HxC floppy emulator unit
+%HxC_PATH%\hxcfe.exe ^
+	-finput:"%~n2.IMD" ^
+	-conv:HXC_HFE ^
+	-foutput:"%~n2.hfe"
+
+echo.
+echo.
+
+echo !!
+if %FORMAT% == rclcpm_DS_nosystracks (
+echo !! Note: the final image size should be 1,251,840 (DSDD) or else "findbad.com" will report a BAD Sector at the last track
+) else (
+echo !! Note: the final image size should be 625,920 (SSDD) or else "findbad.com" will report a BAD Sector at the last track
+)
+echo !!
+
+echo.
+echo.
+echo The new %~n2.hfe file can now be copied to the SDCARD of the HxC floppy disk emulator unit.
+echo.
+echo.
+
+@echo on

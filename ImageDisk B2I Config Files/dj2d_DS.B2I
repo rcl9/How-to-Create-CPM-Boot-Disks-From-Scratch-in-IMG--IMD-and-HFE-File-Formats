@@ -1,0 +1,30 @@
+; This is the extended format definition of the Morrow "Disk Jockey 2D" controller -- DSDD - 2 sided
+
+; Note: I verified on April 10 2026 via a Kryoflux DTC read that the first track of side 0 and 1 of a Morrow DD disk is in FM (single density). 
+; 	So, the two first logical tracks should be in single density with the remainder in double density. 
+;
+;	That makes the total file size = 2 * (128 * 26) + (154-2) * 1024 * 8 = 1,251,840
+;
+; I also confirmed that for DS disks, logical tracks 0 and 1 are SD whereas 2 and 3 are DD, but the system tracks are only written to the first side
+; and hence the system remains on tracks 0 (SD) and 2 (DD).
+
+;BIN2IMD RCEMY2.RAW RCEMY2.IMD RCEMY2.B2I
+
+; The first two logical tracks are SD but only side 0 is used for the system
+
+; DJ2D, track 0 = SD (FM), 26 x 128 byte sectors, double sided
+; DM=0 -> FM  SD 500 kbps
+; As per my note above, I believe the first two tracks (on sides 0 and 1) are SD/FM and not DD/MFM.
+; Also, it appears from my testing that the Morrow system tracks are not skewed.
+0 N=77 DM=0 SS=128 SM=1-26 /2
+
+; Logical tracks 2 and beyond are DD
+
+; DJ2D tracks 2+, DD (MFM), 8 x 1024 byte sectors, double sided
+; DM=3 -> MFM DD 500 kbps
+; Sector order = 1,4,7,2,5,8,3,6
+; RCL, April 18 2026, if I set the following first digit to "2" then ImageDisk reported "Input file is larger than output image" 
+;	which didn't make any sense to me since (in my mind) the first two tracks are in SD while the remainder are in DD.
+;	So, I guess they consider the "0" above to refer to both sides of the disk due to the /2 parameter and the following
+;	'1' as referring to the next subsequent DD tracks. In any case, it now seems to work okay.
+1 DM=3 SS=1024 SM=1-8 
