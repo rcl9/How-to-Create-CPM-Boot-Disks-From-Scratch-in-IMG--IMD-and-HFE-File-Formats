@@ -20,7 +20,7 @@ In particular, this tutorial will explain:
 
 ## An Overview of the Disk Image Creation Process
 
-This section documents my [script files](</Conversion script>) automation process.  The script files are written in the "4DOS/4NT/TCE/Take-Command" scripting language by [JP Software](<https://jpsoft.com>) for which I was one of their inital users. It also depends on Unix-like commands like 'rm' and 'dd' which are defined by the CygWin toolset on my computer.
+This section documents my [script files](</Conversion script>) automation process.  The script files are written in the "4DOS/4NT/TCE/Take-Command" scripting language by [JP Software](<https://jpsoft.com>) for which I was one of their inital users. They also depend on Unix-like commands like 'rm' and 'dd' which are defined by the CygWin toolset on my computer.
 
 - First you need to make a directory of the files on your PC which are to be embedded in the CP/M file image. Note that due to the larger block sizes on a CP/M disk you will often have to keep the overall directory file size much less than the stated capacity of the CP/M diskette (ie. 500k files for a 640k single sided diskette). Also, the directory's name must be 8 character or less due to the restrictions of the CPMtools utility program. 
 
