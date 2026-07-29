@@ -14,7 +14,7 @@ In particular, this tutorial will explain:
 
 - How to deal with "mixed track geometry", including single-sided and double-sided disks, whereby track 0 is in single-density (128x16) and the remainder of the tracks are in double density (1024x8), as used with the Morrow DiskJockey 2D double-density disk format. 
 
-- How to insert a stock system boot image into tracks 0 and 1, and in either single-sided or double-sided modes.
+- How to insert a stock system boot image into tracks 0 and 1, and in either single-sided or double-sided modes. The creation of those Morrow DJ2D system boot images is [outlined here](<https://github.com/rcl9/Morrow-DJ2D-CPM-22-Recompile-From-Source>).
 
 - In particular, for my own usage scenario, this process was created to clone/mirror my physical Morrow DiskJockey 2D S-100 8" floppy disk system running on my Exidy Sorcerer and its S-100 expansion box. My intent was to be able to take my archived collection of files on my PC hard disk and automatically save them back to 640k (single sided) or 1.2MB (double sided) HFE files to be used with the HxC Floppy Emulator. This process would also allow me to "pick and choose" from a number of [pre-defined system boot images](</Boot Track System Images for DJ2D and Exidy Sorcerer>) that I had created in the near past. 
 
@@ -150,3 +150,5 @@ I am providing two versions, [one for single sided](</ImageDisk B2I Config Files
 [How to Boot CP/M-3 from the HxC Floppy Emulator on the Cypher Z80/68000 SBC](<https://github.com/rcl9/Cypher-Z80-68000-Single-Board-Computer---Running-CPM-3-via-the-HxC-Floppy-Emulator>)
 
 [Morrow DISK JOCKEY 2D CP/M 2.2 "SYSGEN" Recompile From Source Files (For Exidy Sorcerer)](<https://github.com/rcl9/Morrow-DJ2D-CPM-22-Recompile-From-Source>)
+
+[Morrow DISK JOCKEY 2D Floppy Disk Controller for S-100 Bus - A Historical Compendium & Snaphot of Technical Information](<https://github.com/rcl9/Morrow-DISK-JOCKEY-2D-Floppy-Disk-Controller-for-S100-Bus>)
