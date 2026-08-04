@@ -152,3 +152,7 @@ I am providing two versions, [one for single sided](</ImageDisk B2I Config Files
 [Morrow DISK JOCKEY 2D CP/M 2.2 "SYSGEN" Recompile From Source Files (For Exidy Sorcerer)](<https://github.com/rcl9/Morrow-DJ2D-CPM-22-Recompile-From-Source>)
 
 [Morrow DISK JOCKEY 2D Floppy Disk Controller for S-100 Bus - A Historical Compendium & Snaphot of Technical Information](<https://github.com/rcl9/Morrow-DISK-JOCKEY-2D-Floppy-Disk-Controller-for-S100-Bus>)
+
+[CPM-Floppy-Definitions & List of How-To's](<https://github.com/ldkraemer/CPM-Floppy-Definitions>)
+
+[Access CP/M Floppy's via libdsk & cpmtools](<https://forums.debian.net/viewtopic.php?t=112244>)
